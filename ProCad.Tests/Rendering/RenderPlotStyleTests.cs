@@ -53,7 +53,7 @@ public sealed class RenderPlotStyleTests
     public void ResolveEntityColor_UsesStbDefaultPlotStyle()
     {
         var document = new CadDocument();
-        document.Header.PlotStyleMode = 1;
+        document.Header.PlotStyleMode = (ACadSharp.Header.PlotStyleMode)1;
 
         var plotStyleDict = new CadDictionaryWithDefault(CadDictionary.AcadPlotStyleName, new PlotSettings("MyStyle"));
         document.RootDictionary.Add(CadDictionary.AcadPlotStyleName, plotStyleDict);
@@ -94,7 +94,7 @@ public sealed class RenderPlotStyleTests
     public void ResolveEntityColor_UsesStbWhenPlotStyleModeBitSet()
     {
         var document = new CadDocument();
-        document.Header.PlotStyleMode = 0x2000;
+        document.Header.PlotStyleMode = (ACadSharp.Header.PlotStyleMode)0x2000;
 
         var plotStyleDict = new CadDictionaryWithDefault(CadDictionary.AcadPlotStyleName, new PlotSettings("Normal"));
         document.RootDictionary.Add(CadDictionary.AcadPlotStyleName, plotStyleDict);

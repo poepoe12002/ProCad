@@ -1,5 +1,6 @@
 using ACadSharp.Entities;
 using CSMath;
+using CSMath.Extensions;
 
 namespace ProCad.Editing.Commands;
 

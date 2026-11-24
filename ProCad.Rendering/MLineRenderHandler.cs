@@ -6,6 +6,7 @@ using ACadSharp;
 using ACadSharp.Entities;
 using ACadSharp.Objects;
 using CSMath;
+using CSMath.Extensions;
 
 namespace ProCad.Rendering;
 

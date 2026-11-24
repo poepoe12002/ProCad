@@ -7,6 +7,7 @@ using ProCad.Diagnostics;
 using ProCad.Services;
 using ACadSharp;
 using ACadSharp.IO;
+using CadFileFormat = ProCad.Core.CadFileFormat;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;

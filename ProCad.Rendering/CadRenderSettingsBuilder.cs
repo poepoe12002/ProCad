@@ -629,11 +629,14 @@ public static class CadRenderSettingsBuilder
             return best;
         }
 
-        if (layout.Viewport is not null &&
-            !layout.Viewport.Status.HasFlag(ViewportStatusFlags.ViewportOff) &&
-            !ViewportRenderUtils.IsPaperViewport(layout.Viewport))
+        // ACadSharp renamed Layout.Viewport to LastActiveViewport and dropped its fallback to
+        // the first viewport, so the fallback is applied here.
+        var lastActive = layout.LastActiveViewport ?? layout.Viewports?.FirstOrDefault();
+        if (lastActive is not null &&
+            !lastActive.Status.HasFlag(ViewportStatusFlags.ViewportOff) &&
+            !ViewportRenderUtils.IsPaperViewport(lastActive))
         {
-            return layout.Viewport;
+            return lastActive;
         }
 
         return null;

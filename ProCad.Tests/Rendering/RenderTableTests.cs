@@ -1,3 +1,4 @@
+using ACadSharp;
 using System.Linq;
 using System;
 using ProCad.Rendering;
@@ -27,8 +28,7 @@ public sealed class RenderTableTests
         {
             ContentType = TableEntity.TableCellContentType.Value
         };
-        content.Value.ValueType = TableEntity.CellValueType.String;
-        content.Value.Text = "A1";
+        content.CadValue.SetValue("A1", CadValueType.String);
         cell.Contents.Add(content);
         row.Cells.Add(cell);
         table.Rows.Add(row);
@@ -59,7 +59,7 @@ public sealed class RenderTableTests
         {
             ContentType = TableEntity.TableCellContentType.Block
         };
-        content.Value.Text = "BLOCK_A";
+        content.CadValue.SetValue("BLOCK_A", CadValueType.String);
         cell.Contents.Add(content);
         row.Cells.Add(cell);
         table.Rows.Add(row);
@@ -93,8 +93,10 @@ public sealed class RenderTableTests
         {
             ContentType = TableEntity.TableCellContentType.Block
         };
-        content.Value.ValueType = TableEntity.CellValueType.Handle;
-        content.Value.Value = block.Handle;
+        // CadValue.SetValue only accepts resolved objects for Handle values; store the raw
+        // handle the way older files expose it, then tag it as a handle.
+        content.CadValue.SetValue(block.Handle, CadValueType.Unknown);
+        content.CadValue.ValueType = CadValueType.Handle;
         cell.Contents.Add(content);
         row.Cells.Add(cell);
         table.Rows.Add(row);
@@ -126,8 +128,7 @@ public sealed class RenderTableTests
         {
             ContentType = TableEntity.TableCellContentType.Block
         };
-        content.Value.ValueType = TableEntity.CellValueType.String;
-        content.Value.Value = "BLOCK_VALUE_ONLY";
+        content.CadValue.SetValue("BLOCK_VALUE_ONLY", CadValueType.String);
         cell.Contents.Add(content);
         row.Cells.Add(cell);
         table.Rows.Add(row);
@@ -168,8 +169,10 @@ public sealed class RenderTableTests
         {
             ContentType = TableEntity.TableCellContentType.Block
         };
-        content.Value.ValueType = TableEntity.CellValueType.Handle;
-        content.Value.Value = handleToken;
+        // CadValue.SetValue only accepts resolved objects for Handle values; store the raw
+        // handle the way older files expose it, then tag it as a handle.
+        content.CadValue.SetValue(handleToken, CadValueType.Unknown);
+        content.CadValue.ValueType = CadValueType.Handle;
         cell.Contents.Add(content);
         row.Cells.Add(cell);
         table.Rows.Add(row);

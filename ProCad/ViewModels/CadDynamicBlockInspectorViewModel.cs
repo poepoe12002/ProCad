@@ -134,7 +134,7 @@ public sealed class CadDynamicBlockInspectorViewModel : ViewModelBase, IDisposab
 
         var viewModel = new CadDynamicBlockFlipParameterViewModel(
             parameter.ElementName ?? string.Empty,
-            parameter.Caption,
+            parameter.Label,
             parameter.ElementName,
             parameter.Id,
             parameter.Value1071,

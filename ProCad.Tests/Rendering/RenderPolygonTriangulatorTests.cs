@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ProCad.Rendering;
 using CSMath;
+using CSMath.Extensions;
 using Xunit;
 
 namespace ProCad.Tests.Rendering;

@@ -32,7 +32,7 @@ public sealed class RenderFillTests
     public void BuildScene_DoesNotAddFillForClosedPolyline()
     {
         var document = new ACadSharp.CadDocument();
-        var polyline = new LwPolyline(new[]
+        var polyline = new LwPolyline(new IVector[]
         {
             new XY(0, 0),
             new XY(4, 0),
@@ -54,7 +54,7 @@ public sealed class RenderFillTests
     public void BuildScene_AddsFillForWidePolyline()
     {
         var document = new ACadSharp.CadDocument();
-        var polyline = new LwPolyline(new[]
+        var polyline = new LwPolyline(new IVector[]
         {
             new XY(0, 0),
             new XY(4, 0),
@@ -75,7 +75,7 @@ public sealed class RenderFillTests
     public void BuildScene_DoesNotAddFillForWidePolylineWhenFillModeDisabled()
     {
         var document = new ACadSharp.CadDocument();
-        var polyline = new LwPolyline(new[]
+        var polyline = new LwPolyline(new IVector[]
         {
             new XY(0, 0),
             new XY(4, 0),

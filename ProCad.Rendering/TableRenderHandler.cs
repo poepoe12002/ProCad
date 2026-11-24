@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ACadSharp;
 using ACadSharp.Entities;
 using ACadSharp.Objects;
 using ACadSharp.Tables;
 using CSMath;
+using CSMath.Extensions;
 
 namespace ProCad.Rendering;
 
@@ -32,8 +34,8 @@ public sealed class TableRenderHandler : IRenderEntityHandler
         var lineCap = context.ResolveLineCap(table);
         var lineJoin = context.ResolveLineJoin(table);
 
-        var columnPositions = BuildColumnPositions(table.Columns);
-        var rowPositions = BuildRowPositions(table.Rows);
+        var columnPositions = BuildColumnPositions(table.Columns.ToList());
+        var rowPositions = BuildRowPositions(table.Rows.ToList());
         var spans = BuildCellSpans(table);
         var styles = BuildEffectiveStyles(table, spans);
 
@@ -387,15 +389,10 @@ public sealed class TableRenderHandler : IRenderEntityHandler
 
     private static string ResolveContentText(TableEntity.CellContent content)
     {
-        var value = content.Value;
+        var value = content.CadValue;
         if (!string.IsNullOrWhiteSpace(value.FormattedValue))
         {
             return value.FormattedValue;
-        }
-
-        if (!string.IsNullOrWhiteSpace(value.Text))
-        {
-            return value.Text;
         }
 
         if (value.Value is not null)
@@ -418,7 +415,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
         double marginTop,
         double marginRight,
         double marginBottom,
-        TableEntity.Cell.CellAlignmentType alignment)
+        TableStyle.CellAlignmentType alignment)
     {
         var innerLeft = left + marginLeft;
         var innerRight = right - marginRight;
@@ -432,39 +429,39 @@ public sealed class TableRenderHandler : IRenderEntityHandler
 
         switch (alignment)
         {
-            case TableEntity.Cell.CellAlignmentType.TopLeft:
+            case TableStyle.CellAlignmentType.TopLeft:
                 x = innerLeft;
                 y = innerTop;
                 break;
-            case TableEntity.Cell.CellAlignmentType.TopCenter:
+            case TableStyle.CellAlignmentType.TopCenter:
                 x = centerX;
                 y = innerTop;
                 break;
-            case TableEntity.Cell.CellAlignmentType.TopRight:
+            case TableStyle.CellAlignmentType.TopRight:
                 x = innerRight;
                 y = innerTop;
                 break;
-            case TableEntity.Cell.CellAlignmentType.MiddleLeft:
+            case TableStyle.CellAlignmentType.MiddleLeft:
                 x = innerLeft;
                 y = centerY;
                 break;
-            case TableEntity.Cell.CellAlignmentType.MiddleCenter:
+            case TableStyle.CellAlignmentType.MiddleCenter:
                 x = centerX;
                 y = centerY;
                 break;
-            case TableEntity.Cell.CellAlignmentType.MiddleRight:
+            case TableStyle.CellAlignmentType.MiddleRight:
                 x = innerRight;
                 y = centerY;
                 break;
-            case TableEntity.Cell.CellAlignmentType.BottomLeft:
+            case TableStyle.CellAlignmentType.BottomLeft:
                 x = innerLeft;
                 y = innerBottom;
                 break;
-            case TableEntity.Cell.CellAlignmentType.BottomCenter:
+            case TableStyle.CellAlignmentType.BottomCenter:
                 x = centerX;
                 y = innerBottom;
                 break;
-            case TableEntity.Cell.CellAlignmentType.BottomRight:
+            case TableStyle.CellAlignmentType.BottomRight:
                 x = innerRight;
                 y = innerBottom;
                 break;
@@ -479,7 +476,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
         EffectiveCellStyle cellStyle,
         string textValue,
         XYZ anchor,
-        TableEntity.Cell.CellAlignmentType alignment)
+        TableStyle.CellAlignmentType alignment)
     {
         var format = cell.Content?.Format;
         var height = format?.TextHeight ?? cellStyle.TextHeight;
@@ -506,7 +503,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
     private static Color ResolveCellTextColor(
         TableEntity table,
         EffectiveCellStyle cellStyle,
-        TableEntity.ContentFormat? format)
+        TableStyle.ContentFormat? format)
     {
         var color = format?.Color ?? cellStyle.TextColor;
         if (color.IsByLayer || color.IsByBlock)
@@ -517,19 +514,19 @@ public sealed class TableRenderHandler : IRenderEntityHandler
         return color;
     }
 
-    private static AttachmentPointType ResolveAttachmentPoint(TableEntity.Cell.CellAlignmentType alignment)
+    private static AttachmentPointType ResolveAttachmentPoint(TableStyle.CellAlignmentType alignment)
     {
         return alignment switch
         {
-            TableEntity.Cell.CellAlignmentType.TopLeft => AttachmentPointType.TopLeft,
-            TableEntity.Cell.CellAlignmentType.TopCenter => AttachmentPointType.TopCenter,
-            TableEntity.Cell.CellAlignmentType.TopRight => AttachmentPointType.TopRight,
-            TableEntity.Cell.CellAlignmentType.MiddleLeft => AttachmentPointType.MiddleLeft,
-            TableEntity.Cell.CellAlignmentType.MiddleCenter => AttachmentPointType.MiddleCenter,
-            TableEntity.Cell.CellAlignmentType.MiddleRight => AttachmentPointType.MiddleRight,
-            TableEntity.Cell.CellAlignmentType.BottomLeft => AttachmentPointType.BottomLeft,
-            TableEntity.Cell.CellAlignmentType.BottomCenter => AttachmentPointType.BottomCenter,
-            TableEntity.Cell.CellAlignmentType.BottomRight => AttachmentPointType.BottomRight,
+            TableStyle.CellAlignmentType.TopLeft => AttachmentPointType.TopLeft,
+            TableStyle.CellAlignmentType.TopCenter => AttachmentPointType.TopCenter,
+            TableStyle.CellAlignmentType.TopRight => AttachmentPointType.TopRight,
+            TableStyle.CellAlignmentType.MiddleLeft => AttachmentPointType.MiddleLeft,
+            TableStyle.CellAlignmentType.MiddleCenter => AttachmentPointType.MiddleCenter,
+            TableStyle.CellAlignmentType.MiddleRight => AttachmentPointType.MiddleRight,
+            TableStyle.CellAlignmentType.BottomLeft => AttachmentPointType.BottomLeft,
+            TableStyle.CellAlignmentType.BottomCenter => AttachmentPointType.BottomCenter,
+            TableStyle.CellAlignmentType.BottomRight => AttachmentPointType.BottomRight,
             _ => AttachmentPointType.MiddleCenter
         };
     }
@@ -578,7 +575,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
 
     private static BlockRecord? ResolveCellBlock(TableEntity table, TableEntity.CellContent content)
     {
-        if (content.Value?.Value is BlockRecord record)
+        if (content.CadValue?.Value is BlockRecord record)
         {
             return record;
         }
@@ -589,16 +586,16 @@ public sealed class TableRenderHandler : IRenderEntityHandler
             return null;
         }
 
-        var valueType = content.Value?.ValueType;
-        var preferHandle = valueType == TableEntity.CellValueType.Handle;
-        if (TryResolveBlockByHandleValue(document, content.Value?.Value, preferHandle, out var blockByValue))
+        var valueType = content.CadValue?.ValueType;
+        var preferHandle = valueType == CadValueType.Handle;
+        if (TryResolveBlockByHandleValue(document, content.CadValue?.Value, preferHandle, out var blockByValue))
         {
             return blockByValue;
         }
 
-        var name = content.Value?.Text ?? content.Value?.FormattedValue;
+        var name = content.CadValue?.FormattedValue;
         if (string.IsNullOrWhiteSpace(name) &&
-            content.Value?.Value is string valueName)
+            content.CadValue?.Value is string valueName)
         {
             name = valueName;
         }
@@ -787,7 +784,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
     private static EffectiveCellStyle ResolveEffectiveStyle(TableEntity table, int row, int col, TableEntity.Cell cell)
     {
         var tableStyle = table.Style ?? TableStyle.Default;
-        var baseStyle = tableStyle.TableCellStyle ?? new TableEntity.CellStyle();
+        var baseStyle = tableStyle.TableCellStyle ?? new TableStyle.CellStyle();
         var rowStyle = ResolveRowStyle(tableStyle, row);
 
         var effective = EffectiveCellStyle.FromBase(baseStyle);
@@ -815,23 +812,23 @@ public sealed class TableRenderHandler : IRenderEntityHandler
         return effective;
     }
 
-    private static TableEntity.CellStyle ResolveRowStyle(TableStyle style, int rowIndex)
+    private static TableStyle.CellStyle ResolveRowStyle(TableStyle style, int rowIndex)
     {
         if (!style.SuppressTitle && rowIndex == 0)
         {
-            return style.TitleCellStyle ?? new TableEntity.CellStyle();
+            return style.TitleCellStyle ?? new TableStyle.CellStyle();
         }
 
         var headerIndex = style.SuppressTitle ? 0 : 1;
         if (!style.SuppressHeaderRow && rowIndex == headerIndex)
         {
-            return style.HeaderCellStyle ?? new TableEntity.CellStyle();
+            return style.HeaderCellStyle ?? new TableStyle.CellStyle();
         }
 
-        return style.DataCellStyle ?? new TableEntity.CellStyle();
+        return style.DataCellStyle ?? new TableStyle.CellStyle();
     }
 
-    private static bool HasStyleOverrides(TableEntity.CellStyle style)
+    private static bool HasStyleOverrides(TableStyle.CellStyle style)
     {
         if (style is null)
         {
@@ -843,14 +840,14 @@ public sealed class TableRenderHandler : IRenderEntityHandler
             return true;
         }
 
-        if (style.PropertyOverrideFlags != TableEntity.TableCellStylePropertyFlags.None ||
-            style.TableCellStylePropertyFlags != TableEntity.TableCellStylePropertyFlags.None ||
-            style.MarginOverrideFlags != TableEntity.MarginFlags.None)
+        if (style.PropertyOverrideFlags != TableStyle.CellStylePropertyFlags.None ||
+            style.TableCellStylePropertyFlags != TableStyle.CellStylePropertyFlags.None ||
+            style.MarginOverrideFlags != TableStyle.MarginFlags.None)
         {
             return true;
         }
 
-        if (style.CellAlignment != TableEntity.Cell.CellAlignmentType.None ||
+        if (style.CellAlignment != TableStyle.CellAlignmentType.None ||
             style.TextHeight > 0 ||
             style.TextStyle is not null ||
             style.IsFillColorOn)
@@ -876,9 +873,9 @@ public sealed class TableRenderHandler : IRenderEntityHandler
                HasBorderOverrides(style.VerticalInsideBorder);
     }
 
-    private static bool HasBorderOverrides(TableEntity.CellBorder border)
+    private static bool HasBorderOverrides(TableStyle.CellBorder border)
     {
-        return border.PropertyOverrideFlags != TableEntity.TableBorderPropertyFlags.None ||
+        return border.PropertyOverrideFlags != TableStyle.BorderPropertyFlags.None ||
                border.LineWeight != 0 ||
                border.DoubleLineSpacing > 0 ||
                border.IsInvisible ||
@@ -979,7 +976,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
         RenderLayerBuilder builder,
         System.Numerics.Vector2 start,
         System.Numerics.Vector2 end,
-        TableEntity.CellBorder border,
+        TableStyle.CellBorder border,
         RenderColor baseColor,
         float baseThickness,
         RenderLineCap lineCap,
@@ -989,7 +986,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
     {
         var color = ResolveBorderColor(border, baseColor, settings);
         var thickness = ResolveBorderThickness(border, baseThickness, settings);
-        if (border.Type == TableEntity.BorderType.Double && border.DoubleLineSpacing > 0)
+        if (border.Type == TableStyle.BorderType.Double && border.DoubleLineSpacing > 0)
         {
             // Draw two parallel lines offset by half the spacing.
             var offset = (float)(border.DoubleLineSpacing * 0.5);
@@ -1007,7 +1004,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
     }
 
     private static RenderColor ResolveBorderColor(
-        TableEntity.CellBorder border,
+        TableStyle.CellBorder border,
         RenderColor baseColor,
         CadRenderSceneSettings settings)
     {
@@ -1020,7 +1017,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
     }
 
     private static float ResolveBorderThickness(
-        TableEntity.CellBorder border,
+        TableStyle.CellBorder border,
         float baseThickness,
         CadRenderSceneSettings settings)
     {
@@ -1070,7 +1067,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
 
     private sealed class EffectiveCellStyle
     {
-        public TableEntity.Cell.CellAlignmentType Alignment { get; private set; }
+        public TableStyle.CellAlignmentType Alignment { get; private set; }
         public double TextHeight { get; private set; }
         public TextStyle? TextStyle { get; private set; }
         public Color TextColor { get; private set; }
@@ -1080,75 +1077,75 @@ public sealed class TableRenderHandler : IRenderEntityHandler
         public double MarginRight { get; private set; }
         public double MarginTop { get; private set; }
         public double MarginBottom { get; private set; }
-        public TableEntity.CellBorder TopBorder { get; private set; }
-        public TableEntity.CellBorder BottomBorder { get; private set; }
-        public TableEntity.CellBorder LeftBorder { get; private set; }
-        public TableEntity.CellBorder RightBorder { get; private set; }
-        public TableEntity.CellBorder HorizontalInsideBorder { get; private set; }
-        public TableEntity.CellBorder VerticalInsideBorder { get; private set; }
-        public TableEntity.Cell.VirtualEdgeFlags VirtualEdges { get; private set; }
+        public TableStyle.CellBorder TopBorder { get; private set; }
+        public TableStyle.CellBorder BottomBorder { get; private set; }
+        public TableStyle.CellBorder LeftBorder { get; private set; }
+        public TableStyle.CellBorder RightBorder { get; private set; }
+        public TableStyle.CellBorder HorizontalInsideBorder { get; private set; }
+        public TableStyle.CellBorder VerticalInsideBorder { get; private set; }
+        public VirtualEdgeFlags VirtualEdges { get; private set; }
 
         private EffectiveCellStyle()
         {
-            Alignment = TableEntity.Cell.CellAlignmentType.MiddleCenter;
+            Alignment = TableStyle.CellAlignmentType.MiddleCenter;
             TextHeight = 0;
             TextColor = Color.ByLayer;
             BackgroundColor = Color.ByLayer;
-            TopBorder = new TableEntity.CellBorder(TableEntity.CellEdgeFlags.Top);
-            BottomBorder = new TableEntity.CellBorder(TableEntity.CellEdgeFlags.Bottom);
-            LeftBorder = new TableEntity.CellBorder(TableEntity.CellEdgeFlags.Left);
-            RightBorder = new TableEntity.CellBorder(TableEntity.CellEdgeFlags.Right);
-            HorizontalInsideBorder = new TableEntity.CellBorder(TableEntity.CellEdgeFlags.InsideHorizontal);
-            VerticalInsideBorder = new TableEntity.CellBorder(TableEntity.CellEdgeFlags.InsideVertical);
+            TopBorder = new TableStyle.CellBorder(TableStyle.CellEdgeFlags.Top);
+            BottomBorder = new TableStyle.CellBorder(TableStyle.CellEdgeFlags.Bottom);
+            LeftBorder = new TableStyle.CellBorder(TableStyle.CellEdgeFlags.Left);
+            RightBorder = new TableStyle.CellBorder(TableStyle.CellEdgeFlags.Right);
+            HorizontalInsideBorder = new TableStyle.CellBorder(TableStyle.CellEdgeFlags.InsideHorizontal);
+            VerticalInsideBorder = new TableStyle.CellBorder(TableStyle.CellEdgeFlags.InsideVertical);
         }
 
-        public static EffectiveCellStyle FromBase(TableEntity.CellStyle style)
+        public static EffectiveCellStyle FromBase(TableStyle.CellStyle style)
         {
             var effective = new EffectiveCellStyle();
             effective.ApplyAll(style);
             return effective;
         }
 
-        public void ApplyBase(TableEntity.CellStyle style)
+        public void ApplyBase(TableStyle.CellStyle style)
         {
             ApplyAll(style);
         }
 
-        public void ApplyOverrides(TableEntity.CellStyle style, bool allowHeuristics = false)
+        public void ApplyOverrides(TableStyle.CellStyle style, bool allowHeuristics = false)
         {
             var flags = style.PropertyOverrideFlags;
-            if (flags == TableEntity.TableCellStylePropertyFlags.None && allowHeuristics)
+            if (flags == TableStyle.CellStylePropertyFlags.None && allowHeuristics)
             {
                 flags = DeriveOverrideFlags(style);
             }
 
-            if (flags.HasFlag(TableEntity.TableCellStylePropertyFlags.Alignment) && style.CellAlignment != TableEntity.Cell.CellAlignmentType.None)
+            if (flags.HasFlag(TableStyle.CellStylePropertyFlags.Alignment) && style.CellAlignment != TableStyle.CellAlignmentType.None)
             {
                 Alignment = style.CellAlignment;
             }
 
-            if (flags.HasFlag(TableEntity.TableCellStylePropertyFlags.TextHeight) && style.TextHeight > 0)
+            if (flags.HasFlag(TableStyle.CellStylePropertyFlags.TextHeight) && style.TextHeight > 0)
             {
                 TextHeight = style.TextHeight;
             }
 
-            if (flags.HasFlag(TableEntity.TableCellStylePropertyFlags.TextStyle) && style.TextStyle is not null)
+            if (flags.HasFlag(TableStyle.CellStylePropertyFlags.TextStyle) && style.TextStyle is not null)
             {
                 TextStyle = style.TextStyle;
             }
 
-            if (flags.HasFlag(TableEntity.TableCellStylePropertyFlags.ContentColor) && !style.TextColor.IsByLayer && !style.TextColor.IsByBlock)
+            if (flags.HasFlag(TableStyle.CellStylePropertyFlags.ContentColor) && !style.TextColor.IsByLayer && !style.TextColor.IsByBlock)
             {
                 TextColor = style.TextColor;
             }
 
-            if (flags.HasFlag(TableEntity.TableCellStylePropertyFlags.BackgroundColor))
+            if (flags.HasFlag(TableStyle.CellStylePropertyFlags.BackgroundColor))
             {
                 BackgroundColor = style.BackgroundColor;
                 IsFillColorOn = style.IsFillColorOn;
             }
 
-            if (style.MarginOverrideFlags.HasFlag(TableEntity.MarginFlags.Override))
+            if (style.MarginOverrideFlags.HasFlag(TableStyle.MarginFlags.Override))
             {
                 if (style.VerticalMargin > 0)
                 {
@@ -1205,20 +1202,20 @@ public sealed class TableRenderHandler : IRenderEntityHandler
         {
             return edge switch
             {
-                EdgeType.Top => VirtualEdges.HasFlag(TableEntity.Cell.VirtualEdgeFlags.Top),
-                EdgeType.Bottom => VirtualEdges.HasFlag(TableEntity.Cell.VirtualEdgeFlags.Bottom),
-                EdgeType.Left => VirtualEdges.HasFlag(TableEntity.Cell.VirtualEdgeFlags.Left),
-                EdgeType.Right => VirtualEdges.HasFlag(TableEntity.Cell.VirtualEdgeFlags.Right),
+                EdgeType.Top => VirtualEdges.HasFlag(VirtualEdgeFlags.Top),
+                EdgeType.Bottom => VirtualEdges.HasFlag(VirtualEdgeFlags.Bottom),
+                EdgeType.Left => VirtualEdges.HasFlag(VirtualEdgeFlags.Left),
+                EdgeType.Right => VirtualEdges.HasFlag(VirtualEdgeFlags.Right),
                 _ => false
             };
         }
 
         public void SetVirtualEdges(TableEntity.Cell cell)
         {
-            VirtualEdges = (TableEntity.Cell.VirtualEdgeFlags)cell.VirtualEdgeFlag;
+            VirtualEdges = (VirtualEdgeFlags)cell.VirtualEdgeFlag;
         }
 
-        public TableEntity.CellBorder ResolveBorder(EdgeType edge, bool isOuter)
+        public TableStyle.CellBorder ResolveBorder(EdgeType edge, bool isOuter)
         {
             return edge switch
             {
@@ -1230,9 +1227,9 @@ public sealed class TableRenderHandler : IRenderEntityHandler
             };
         }
 
-        private static TableEntity.CellBorder SelectBorder(
-            TableEntity.CellBorder edgeBorder,
-            TableEntity.CellBorder insideBorder,
+        private static TableStyle.CellBorder SelectBorder(
+            TableStyle.CellBorder edgeBorder,
+            TableStyle.CellBorder insideBorder,
             bool isOuter)
         {
             if (isOuter)
@@ -1240,12 +1237,12 @@ public sealed class TableRenderHandler : IRenderEntityHandler
                 return edgeBorder;
             }
 
-            return edgeBorder.PropertyOverrideFlags != TableEntity.TableBorderPropertyFlags.None ? edgeBorder : insideBorder;
+            return edgeBorder.PropertyOverrideFlags != TableStyle.BorderPropertyFlags.None ? edgeBorder : insideBorder;
         }
 
-        private void ApplyAll(TableEntity.CellStyle style)
+        private void ApplyAll(TableStyle.CellStyle style)
         {
-            if (style.CellAlignment != TableEntity.Cell.CellAlignmentType.None)
+            if (style.CellAlignment != TableStyle.CellAlignmentType.None)
             {
                 Alignment = style.CellAlignment;
             }
@@ -1277,7 +1274,7 @@ public sealed class TableRenderHandler : IRenderEntityHandler
             CopyBorder(VerticalInsideBorder, style.VerticalInsideBorder);
         }
 
-        private static void CopyBorder(TableEntity.CellBorder target, TableEntity.CellBorder source)
+        private static void CopyBorder(TableStyle.CellBorder target, TableStyle.CellBorder source)
         {
             if (source is null)
             {
@@ -1292,64 +1289,77 @@ public sealed class TableRenderHandler : IRenderEntityHandler
             target.PropertyOverrideFlags = source.PropertyOverrideFlags;
         }
 
-        private static void ApplyBorderOverrides(TableEntity.CellBorder target, TableEntity.CellBorder source)
+        private static void ApplyBorderOverrides(TableStyle.CellBorder target, TableStyle.CellBorder source)
         {
             if (source is null)
             {
                 return;
             }
 
-            if (source.PropertyOverrideFlags == TableEntity.TableBorderPropertyFlags.None)
+            if (source.PropertyOverrideFlags == TableStyle.BorderPropertyFlags.None)
             {
                 return;
             }
 
-            if (source.PropertyOverrideFlags.HasFlag(TableEntity.TableBorderPropertyFlags.Color))
+            if (source.PropertyOverrideFlags.HasFlag(TableStyle.BorderPropertyFlags.Color))
             {
                 target.Color = source.Color;
             }
 
-            if (source.PropertyOverrideFlags.HasFlag(TableEntity.TableBorderPropertyFlags.LineWeight))
+            if (source.PropertyOverrideFlags.HasFlag(TableStyle.BorderPropertyFlags.LineWeight))
             {
                 target.LineWeight = source.LineWeight;
             }
 
-            if (source.PropertyOverrideFlags.HasFlag(TableEntity.TableBorderPropertyFlags.Invisibility))
+            if (source.PropertyOverrideFlags.HasFlag(TableStyle.BorderPropertyFlags.Invisibility))
             {
                 target.IsInvisible = source.IsInvisible;
             }
 
-            if (source.PropertyOverrideFlags.HasFlag(TableEntity.TableBorderPropertyFlags.DoubleLineSpacing))
+            if (source.PropertyOverrideFlags.HasFlag(TableStyle.BorderPropertyFlags.DoubleLineSpacing))
             {
                 target.DoubleLineSpacing = source.DoubleLineSpacing;
                 target.Type = source.Type;
             }
         }
 
-        private static TableEntity.TableCellStylePropertyFlags DeriveOverrideFlags(TableEntity.CellStyle style)
+        private static TableStyle.CellStylePropertyFlags DeriveOverrideFlags(TableStyle.CellStyle style)
         {
-            var flags = TableEntity.TableCellStylePropertyFlags.None;
-            if (style.CellAlignment != TableEntity.Cell.CellAlignmentType.None)
+            var flags = TableStyle.CellStylePropertyFlags.None;
+            if (style.CellAlignment != TableStyle.CellAlignmentType.None)
             {
-                flags |= TableEntity.TableCellStylePropertyFlags.Alignment;
+                flags |= TableStyle.CellStylePropertyFlags.Alignment;
             }
             if (style.TextHeight > 0)
             {
-                flags |= TableEntity.TableCellStylePropertyFlags.TextHeight;
+                flags |= TableStyle.CellStylePropertyFlags.TextHeight;
             }
             if (style.TextStyle is not null)
             {
-                flags |= TableEntity.TableCellStylePropertyFlags.TextStyle;
+                flags |= TableStyle.CellStylePropertyFlags.TextStyle;
             }
             if (!style.TextColor.IsByLayer && !style.TextColor.IsByBlock)
             {
-                flags |= TableEntity.TableCellStylePropertyFlags.ContentColor;
+                flags |= TableStyle.CellStylePropertyFlags.ContentColor;
             }
             if (!style.BackgroundColor.IsByLayer && !style.BackgroundColor.IsByBlock)
             {
-                flags |= TableEntity.TableCellStylePropertyFlags.BackgroundColor;
+                flags |= TableStyle.CellStylePropertyFlags.BackgroundColor;
             }
             return flags;
         }
     }
+
+    // ACadSharp's TableEntity.Cell.VirtualEdgeFlag is a raw short since the enum was removed
+    // upstream (DomCR/ACadSharp 7c6f7e99); these are the values that enum used.
+    [System.Flags]
+    private enum VirtualEdgeFlags
+    {
+        None = 0,
+        Top = 1,
+        Right = 2,
+        Bottom = 4,
+        Left = 8
+    }
+
 }

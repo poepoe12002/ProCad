@@ -352,7 +352,6 @@ public sealed class RenderImageTests
         {
             Flags = ImageDisplayFlags.ShowImage | ImageDisplayFlags.UseClippingBoundary,
             ClippingState = true,
-            ClipType = ClipType.Rectangular,
             ClipMode = ClipMode.Outside,
             Size = new XY(6, 6),
             InsertPoint = XYZ.Zero,
@@ -391,7 +390,6 @@ public sealed class RenderImageTests
         {
             Flags = ImageDisplayFlags.ShowImage | ImageDisplayFlags.UseClippingBoundary,
             ClippingState = true,
-            ClipType = ClipType.Rectangular,
             ClipMode = ClipMode.Outside,
             Size = new XY(6, 6),
             InsertPoint = XYZ.Zero,
@@ -432,7 +430,6 @@ public sealed class RenderImageTests
         {
             Flags = ImageDisplayFlags.ShowImage | ImageDisplayFlags.UseClippingBoundary,
             ClippingState = true,
-            ClipType = ClipType.Rectangular,
             ClipMode = ClipMode.Outside,
             Size = new XY(6, 6),
             InsertPoint = XYZ.Zero,
@@ -577,7 +574,6 @@ public sealed class RenderImageTests
         {
             Flags = ImageDisplayFlags.ShowImage | ImageDisplayFlags.UseClippingBoundary,
             ClippingState = true,
-            ClipType = ClipType.Rectangular,
             Size = new XY(6, 6),
             InsertPoint = XYZ.Zero,
             UVector = XYZ.AxisX,

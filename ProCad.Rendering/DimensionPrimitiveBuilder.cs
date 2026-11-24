@@ -4,6 +4,7 @@ using ACadSharp;
 using ACadSharp.Entities;
 using ACadSharp.Tables;
 using CSMath;
+using CSMath.Extensions;
 using CSMath.Geometry;
 
 namespace ProCad.Rendering;
@@ -294,7 +295,7 @@ internal static class DimensionPrimitiveBuilder
         var centerRef = dimension.DefinitionPoint.Convert<XY>();
         var ref1 = dimension.AngleVertex.Convert<XY>();
         var radius = dimension.Measurement;
-        if (MathHelper.IsZero(radius))
+        if ((radius).IsZero())
         {
             return false;
         }
@@ -311,7 +312,7 @@ internal static class DimensionPrimitiveBuilder
         List<Entity> primitives)
     {
         var radius = dimension.Measurement * 0.5;
-        if (MathHelper.IsZero(radius))
+        if ((radius).IsZero())
         {
             return false;
         }
@@ -495,7 +496,7 @@ internal static class DimensionPrimitiveBuilder
             }
         }
 
-        if (!MathHelper.IsZero(style.CenterMarkSize))
+        if (!(style.CenterMarkSize).IsZero())
         {
             primitives.AddRange(CreateCenterCross(centerRef.Convert<XYZ>(), radius, style, layer));
         }
@@ -597,7 +598,7 @@ internal static class DimensionPrimitiveBuilder
     private static IEnumerable<Entity> CreateCenterCross(XYZ center, double radius, DimensionStyle style, Layer layer)
     {
         var lines = new List<Entity>();
-        if (MathHelper.IsZero(style.CenterMarkSize))
+        if ((style.CenterMarkSize).IsZero())
         {
             return lines;
         }

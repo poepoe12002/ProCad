@@ -744,7 +744,7 @@ public sealed class CadGeometryCommandHandlersTests
     public async Task Hatch_FromClosedPolylineWithCustomNormal_PreservesNormal()
     {
         var (session, registry) = CreateHarness();
-        var polyline = new LwPolyline(new[]
+        var polyline = new LwPolyline(new IVector[]
         {
             new XY(0.0, 0.0),
             new XY(4.0, 0.0),

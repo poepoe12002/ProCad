@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using CSMath;
+using CSMath.Extensions;
 
 namespace ProCad.Rendering;
 

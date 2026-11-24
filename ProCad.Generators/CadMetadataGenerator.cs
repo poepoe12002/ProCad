@@ -395,6 +395,13 @@ public sealed class CadMetadataGenerator : IIncrementalGenerator
             return false;
         }
 
+        // Multi-dimensional arrays (e.g. ACadSharp's AcdsSchemaProperty.Values, byte[,]) are
+        // rendered by ToDisplayString() in a form the emitted typeof/cast code cannot compile.
+        if (type is IArrayTypeSymbol { Rank: > 1 })
+        {
+            return false;
+        }
+
         return !ContainsTypeParameters(type);
     }
 

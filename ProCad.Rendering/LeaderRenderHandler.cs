@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ACadSharp.Entities;
 using ACadSharp.Tables;
 using CSMath;
+using CSMath.Extensions;
 
 namespace ProCad.Rendering;
 

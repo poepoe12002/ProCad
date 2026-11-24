@@ -191,7 +191,7 @@ public sealed class RenderViewportOverrideTests
     public void ResolveEntityColor_UsesViewportPlotStyleOverrideForStb()
     {
         var document = new CadDocument();
-        document.Header.PlotStyleMode = 1;
+        document.Header.PlotStyleMode = (ACadSharp.Header.PlotStyleMode)1;
 
         var plotStyleDict = new CadDictionaryWithDefault(CadDictionary.AcadPlotStyleName, new PlotSettings("Normal"));
         document.RootDictionary.Add(CadDictionary.AcadPlotStyleName, plotStyleDict);

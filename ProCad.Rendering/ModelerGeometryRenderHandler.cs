@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ACadSharp.Entities;
 using CSMath;
+using CSMath.Extensions;
 
 namespace ProCad.Rendering;
 

@@ -5,6 +5,7 @@ using ACadSharp.Entities;
 using ACadSharp.Objects;
 using ACadSharp.Tables;
 using CSMath;
+using CSMath.Extensions;
 
 namespace ProCad.Rendering;
 
@@ -98,7 +99,9 @@ public sealed class MultiLeaderRenderHandler : IRenderEntityHandler
         RenderLineCap lineCap,
         RenderLineJoin lineJoin)
     {
-        if (line.StartEndPoints.Count == 0)
+        // ACadSharp moved the start/end pairs from LeaderLine into LeaderLine.BreakInfoEntries.
+        var startEndPoints = line.BreakInfoEntries.SelectMany(static entry => entry.StartEndPoints).ToList();
+        if (startEndPoints.Count == 0)
         {
             return;
         }
@@ -109,7 +112,7 @@ public sealed class MultiLeaderRenderHandler : IRenderEntityHandler
         var thickness = ResolveLineWeight(multiLeader, line, baseThickness, context.Settings);
         var builder = context.GetLayerBuilder(multiLeader);
 
-        foreach (var pair in line.StartEndPoints)
+        foreach (var pair in startEndPoints)
         {
             var segment = new List<XYZ> { pair.StartPoint, pair.EndPoint };
             RenderPrimitiveBuilder.AddSampled(
@@ -126,9 +129,9 @@ public sealed class MultiLeaderRenderHandler : IRenderEntityHandler
                 context.Settings);
         }
 
-        if (line.StartEndPoints.Count > 0)
+        if (startEndPoints.Count > 0)
         {
-            var first = line.StartEndPoints[0];
+            var first = startEndPoints[0];
             AppendArrow(multiLeader, contextData, line, new[] { first.StartPoint, first.EndPoint }, transform, context);
         }
     }

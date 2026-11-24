@@ -3,6 +3,7 @@ using ProCad.Core;
 using ACadSharp;
 using ACadSharp.IO;
 using ACadSharp.IO.DWG;
+using CadFileFormat = ProCad.Core.CadFileFormat;
 
 namespace ProCad.IO;
 

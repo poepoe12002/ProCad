@@ -313,7 +313,7 @@ public sealed partial class CadBlockEditorViewModel : CadDocumentViewModelBase, 
                 case BlockFlipParameter flip:
                     parameters.Add(new CadDynamicBlockFlipParameterViewModel(
                         flip.ElementName ?? string.Empty,
-                        flip.Caption,
+                        flip.Label,
                         flip.ElementName,
                         flip.Id,
                         flip.Value1071,
