@@ -1,6 +1,6 @@
 [submodule "external/ACadSharp"]
 	path = external/ACadSharp
-	url = https://github.com/wieslawsoltes/ACadSharp
+	url = https://github.com/poepoe12002/ACadSharp
 [submodule "external/ProEdit"]
 	path = external/ProEdit
 	url = https://github.com/wieslawsoltes/ProEdit
