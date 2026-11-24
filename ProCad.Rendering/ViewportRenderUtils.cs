@@ -22,6 +22,14 @@ public static class ViewportRenderUtils
             return false;
         }
 
+        // The sheet's own viewport is the first one in its paper-space block (ID 1). Any later
+        // viewport is model content, even when it happens to show the model at 1:1 centered on
+        // its own coordinates, which the geometric checks below cannot tell apart.
+        if (viewport.Id > 1)
+        {
+            return false;
+        }
+
         var center = viewport.Center;
         var viewCenter = viewport.ViewCenter;
         if (!NearlyEqual(center.X, viewCenter.X, CenterTolerance) ||

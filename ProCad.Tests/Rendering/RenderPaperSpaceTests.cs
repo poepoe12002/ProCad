@@ -60,6 +60,9 @@ public sealed class RenderPaperSpaceTests
         document.PaperSpace.Entities.Clear();
 
         var layout = document.PaperSpace.Layout;
+        // ACadSharp 3.8.x defaults new layouts to A4 paper; clear it so the extents path is used.
+        layout.PaperWidth = 0;
+        layout.PaperHeight = 0;
         layout.MinExtents = new XYZ(0, 0, 0);
         layout.MaxExtents = new XYZ(100, 50, 0);
 
